@@ -1,12 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>how to create an eCommerce website using HTML, CSS and Bootstrap</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecomorse — HTML/CSS/JS Shop</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    header { background:#fff; padding:15px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:sticky; top:0; }
+    .logo { font-size:24px; font-weight:700; color:#4f46e5; }
+    .cart-btn { cursor:pointer; position:relative; }
+    .cart-count { position:absolute; top:-8px; right:-8px; background:red; color:#fff; padding:2px 6px; border-radius:50%; font-size:12px; }
+
+    .container { max-width:1100px; margin:auto; padding:20px; }
+    .products { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:20px; }
+    .card { background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .card img { width:100%; height:200px; object-fit:cover; }
+    .card .info { padding:15px; }
+    .card button { margin-top:10px; width:100%; padding:10px; background:#4f46e5; border:none; color:#fff; border-radius:5px; cursor:pointer; }
+
+    /* Cart Drawer */
+    #cartDrawer { position:fixed; top:0; right:0; width:350px; height:100%; background:#fff; box-shadow:-2px 0 5px rgba(0,0,0,0.3); transform:translateX(100%); transition:0.3s; padding:20px; overflow-y:auto; }
+    #cartDrawer.open { transform:translateX(0); }
+    .cart-item { display:flex; gap:10px; margin-bottom:15px; }
+    .cart-item img { width:70px; height:70px; object-fit:cover; border-radius:5px; }
+    .qty-controls { margin-top:5px; }
+    .qty-controls button { padding:3px 6px; }
+    footer { text-align:center; padding:20px; margin-top:40px; color:#777; }
+  </style>
 </head>
 <body>
-    
+
+<header>
+  <div class="logo">Ecomorse</div>
+  <div class="cart-btn" onclick="toggleCart()">🛒 Cart <span id="cartCount" class="cart-count">0</span></div>
+</header>
+
+<div class="container">
+  <h2>Products</h2>
+  <div class="products" id="productList"></div>
+</div>
+
+<div id="cartDrawer">
+  <h2>Your Cart</h2>
+  <button onclick="toggleCart()" style="margin-bottom:15px;">Close</button>
+  <div id="cartItems"></div>
+  <h3 id="subtotal">Subtotal: ₹0</h3>
+  <button onclick="checkout()" style="width:100%; padding:10px; background:green; color:white; border:none; border-radius:5px;">Checkout</button>
+</div>
+
+<footer>© 2025 Ecomorse — Simple HTML/CSS/JS Version</footer>
+
+<script>
+  const products = [
+    {id:'1', title:'Sneakers', price:2499, img:'https://via.placeholder.com/420x300?text=Sneakers'},
+    {id:'2', title:'Denim Jacket', price:3199, img:'https://via.placeholder.com/420x300?text=Jacket'},
+    {id:'3', title:'Headphones', price:4999, img:'https://via.placeholder.com/420x300?text=Headphones'},
+    {id:'4', title:'Backpack', price:1499, img:'https://via.placeholder.com/420x300?text=Backpack'}
+  ];
+
+  let cart = [];
+
+  function renderProducts() {
+    const list = document.getElementById('productList');
+    list.innerHTML = products.map(p => `
+      <div class='card'>
+        <img src='${p.img}' />
+        <div class='info'>
+          <h3>${p.title}</h3>
+          <p>₹${p.price}</p>
+          <button onclick='addToCart("${p.id}")'>Add to Cart</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addToCart(id) {
+    const item = cart.find(i => i.id === id);
+    if(item) item.qty++;
+    else {
+      const p = products.find(i => i.id === id);
+      cart.push({...p, qty:1});
+    }
+    updateCart();
+    document.getElementById('cartDrawer').classList.add('open');
+  }
+
+  function updateCart() {
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const subtotal = document.getElementById('subtotal');
+
+    cartItems.innerHTML = cart.map(item => `
+      <div class='cart-item'>
+        <img src='${item.img}' />
+        <div>
+          <strong>${item.title}</strong><br>
+          ₹${item.price}<br>
+          <div class='qty-controls'>
+            <button onclick='changeQty("${item.id}", -1)'>-</button>
+            ${item.qty}
+            <button onclick='changeQty("${item.id}", 1)'>+</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    const totalQty = cart.reduce((a,b) => a + b.qty, 0);
+    cartCount.innerText = totalQty;
+
+    const total = cart.reduce((a,b) => a + b.qty * b.price, 0);
+    subtotal.innerText = 'Subtotal: ₹' + total;
+  }
+
+  function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    item.qty += delta;
+    if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    updateCart();
+  }
+
+  function toggleCart() {
+    document.getElementById('cartDrawer').classList.toggle('open');
+  }
+
+  function checkout() {
+    alert('Checkout Successful — Add backend/payment later');
+    cart = [];
+    updateCart();
+    toggleCart();
+  }
+
+  renderProducts();
+</script>
+
 </body>
 </html>
